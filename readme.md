@@ -12,7 +12,7 @@ DTri calcBoundingDTri(vector<Point>& vecSrc, int padding=10)
 	return dt;
 }
 ```
-凹包三角网格
+![凹包三角网格](https://github.com/palfu/algorithm/blob/master/delaunayPlot0.png)
 
 ```
 DTri calcBoundingDTri(vector<Point>& vecSrc, int padding=10)
@@ -28,6 +28,6 @@ DTri calcBoundingDTri(vector<Point>& vecSrc, int padding=10)
 }
 
 ```
-预期输出
+![预期输出](https://github.com/palfu/algorithm/blob/master/delaunayPlot.png)
 
 
