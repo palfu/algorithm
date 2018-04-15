@@ -1,10 +1,5 @@
-﻿#include <Tools.h>
-#include <chrono>
-#include <iomanip>
-#include <random>
-#include <vector>
+﻿#include <vector>
 #include <algorithm>
-#include <set>
 #include <opencv2/core/core.hpp>
 
 using namespace cv;
@@ -322,7 +317,7 @@ vector<DTri> delaunayTest(vector<Point>& vecSrc)
 		vecNewDtri = genNewTriAccordingToVec(vecPt, pt);
 		vecDTri.insert(vecDTri.end(), vecNewDtri.begin(), vecNewDtri.end());
 
-		plotDTri("delaunayTri_" + to_string(index++) + ".png", vecDTri, rc);
+		//plotDTri("delaunayTri_" + to_string(index++) + ".png", vecDTri, rc);
 	}
 
 	// 删除包含BoundingDTri顶点的三角形
@@ -348,39 +343,35 @@ vector<Point> initPoints()
 	return vecRes;
 }
 
-void test()
-{
-	Point p1(5, 77);
-	Point p3(445, 277);
-	Point p2(666, 7);
-	DTri dt(p1, p2, p3);
+// void test()
+// {
+// 	Point p1(5, 77);
+// 	Point p3(445, 277);
+// 	Point p2(666, 7);
+// 	DTri dt(p1, p2, p3);
 
-	int w = 1000, h = 1000;
-	Mat matDst = Mat(h, w, CV_8UC3);
-	Point rc(0, 0);
-	line(matDst, Point(dt.p1.x - rc.x, dt.p1.y - rc.y), Point(dt.p2.x - rc.x, dt.p2.y - rc.y), Scalar(0, 0, 255), 3);
-	line(matDst, Point(dt.p1.x - rc.x, dt.p1.y - rc.y), Point(dt.p3.x - rc.x, dt.p3.y - rc.y), Scalar(0, 0, 255), 3);
-	line(matDst, Point(dt.p3.x - rc.x, dt.p3.y - rc.y), Point(dt.p2.x - rc.x, dt.p2.y - rc.y), Scalar(0, 0, 255), 3);
+// 	int w = 1000, h = 1000;
+// 	Mat matDst = Mat(h, w, CV_8UC3);
+// 	Point rc(0, 0);
+// 	line(matDst, Point(dt.p1.x - rc.x, dt.p1.y - rc.y), Point(dt.p2.x - rc.x, dt.p2.y - rc.y), Scalar(0, 0, 255), 3);
+// 	line(matDst, Point(dt.p1.x - rc.x, dt.p1.y - rc.y), Point(dt.p3.x - rc.x, dt.p3.y - rc.y), Scalar(0, 0, 255), 3);
+// 	line(matDst, Point(dt.p3.x - rc.x, dt.p3.y - rc.y), Point(dt.p2.x - rc.x, dt.p2.y - rc.y), Scalar(0, 0, 255), 3);
 
-	DEdeg de1(p3, p2);
-	float a, b, c;
-	de1.calcNormal(a, b, c);
-	int wy = (a*w + c) / (-b);
-	int wy0 = (a*0 + c) / (-b);
-	line(matDst, Point(w, wy), Point(0, wy0), Scalar(0, 255, 0), 3);
+// 	DEdeg de1(p3, p2);
+// 	float a, b, c;
+// 	de1.calcNormal(a, b, c);
+// 	int wy = (a*w + c) / (-b);
+// 	int wy0 = (a*0 + c) / (-b);
+// 	line(matDst, Point(w, wy), Point(0, wy0), Scalar(0, 255, 0), 3);
 
-	circle(matDst, dt.cc.center, dt.cc.radius, Scalar(255, 0, 0), 1);
-	imwrite("test.png", matDst);
-}
+// 	circle(matDst, dt.cc.center, dt.cc.radius, Scalar(255, 0, 0), 1);
+// 	imwrite("test.png", matDst);
+// }
 
 
 
 int main(int argc, char** argv)
 {
-
-	//test();
-	//return 0;
-
 
 	vector<Point> vecSrc = initPoints();
 	Rect rc = caclBoundingRect(vecSrc);
