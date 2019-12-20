@@ -8,4 +8,4 @@ find_package(OpenCV 3 REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 add_executable(d2f d2f.cpp)
-link_libraries(d2f ${OpenCV_LIBS})
+target_link_libraries(d2f ${OpenCV_LIBS})
