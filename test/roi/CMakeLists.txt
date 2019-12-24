@@ -11,8 +11,5 @@ message("opencv libs " ${OpenCV_LIBS})
 
 
 
-add_executable(test_filter test_filter.cpp)
-target_link_libraries(test_filter ${OpenCV_LIBS})
-
-add_executable(check_filter check_filter.cpp)
-target_link_libraries(check_filter ${OpenCV_LIBS})
+add_executable(test_roi test_roi.cpp)
+target_link_libraries(test_roi ${OpenCV_LIBS})

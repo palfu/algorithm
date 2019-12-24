@@ -29,7 +29,7 @@ void saveDebugImage(string filename,  Mat& mat)
     Mat save = mat.clone();
     if(mat.type()==CV_32F)
     {
-        save = save*200;
+        save = save*100;
         save.convertTo(save, CV_8U);
     }
     imwrite(filename, save);
@@ -37,7 +37,7 @@ void saveDebugImage(string filename,  Mat& mat)
 
 int overThresholdNbr(cv::Mat& mat, float thresh)
 {
-    Mat over = mat.clone();
+    Mat over;
     threshold(mat, over, thresh, 2.0, THRESH_BINARY);
     over.convertTo(over, CV_8U);
     return countNonZero(over);
@@ -65,35 +65,19 @@ double filterRes(cv::Mat& src, cv::Mat& dst, float ratio, float thresh)
     return res;
 }
 
-float findBestSigma(cv::Mat& src, int src_size, float src_sigma, float focal, int test_size, float thresh=0.1)
+void checkSigma(cv::Mat& src, int src_size, float src_sigma, float focal, int test_size, float test_sigma, float thresh=0.1)
 {
-    //Mat basic_kernel = getGaussianKernel(src_size, src_sigma, CV_32F);
-    //cout<<"basic kernel: \n"<<basic_kernel<<endl;
+    Mat basic_kernel = getGaussianKernel(src_size, src_sigma, CV_32F);
+    // cout<<"basic kernel: \n"<<basic_kernel<<endl;
 
     Mat src_cut, src_float, src_filter;
     threshold(src, src_cut, 30, 1, THRESH_BINARY);
     src_cut.convertTo(src_float, CV_32F);
-    saveDebugImage("src_float.jpg", src_float);
-
-    Mat src_box;
-    boxFilter(src_float, src_box, src_float.type(), Size(30, 30));
-    
-    saveDebugImage("src_box.jpg", src_float);
-
-    // src_float =  src_float*2;
-
-    // boxFilter(src_float, src_float, src_float.type(), Size(10, 10));
-
-   boxFilter(src_box, src_box, src_float.type(), Size(45, 45));
-   saveDebugImage("src_box2.jpg", src_float);
-
-    printf("src size %d, blur sigma %0.3f\n", src_size, src_sigma);
-    GaussianBlur(src_box, src_filter, Size(src_size, src_size), src_sigma, src_sigma);
+    GaussianBlur(src_float, src_filter, Size(test_size, test_size), test_sigma);
     double max;
     cv::minMaxIdx(src_filter, NULL, &max, NULL, NULL);
     printf("src max %0.3f\n", max);
     src_filter *= (1.0f/max);
-    // filter2D(src_float, src_filter, -1, basic_kernel);
 
     saveDebugImage("src_filter.jpg", src_filter);
     PRINTF_INFO("src image valid nbr %d\n", overThresholdNbr(src_filter, thresh));
@@ -106,34 +90,14 @@ float findBestSigma(cv::Mat& src, int src_size, float src_sigma, float focal, in
     threshold(src_resize, dst_float, 30, 1, THRESH_BINARY);
     dst_float.convertTo(dst_float, CV_32F);
     
-    Mat best_filter;
-    float new_sigma=0.1;
-    double min_res=1e8;
-    float best_sigma = new_sigma;
-    while(new_sigma<2*src_sigma)
-    {
-        Mat dst_filter;
-        GaussianBlur(dst_float, dst_filter, Size(test_size, test_size), new_sigma, new_sigma);
-        cv::minMaxIdx(dst_filter, NULL, &max, NULL, NULL);
-        dst_filter *= (1.0f/max);
+    GaussianBlur(dst_float, dst_filter, Size(test_size, test_size), test_sigma);
+    cv::minMaxIdx(dst_filter, NULL, &max, NULL, NULL);
+    dst_filter *= (1.0f/max);
+    double res = filterRes(src_filter, dst_filter, focal, thresh);
 
-        double res = filterRes(src_filter, dst_filter, focal, thresh);
-
-        if(min_res>res)
-        {
-            min_res = res;
-            best_filter = dst_filter.clone();
-            best_sigma = new_sigma;
-        }
-
-        new_sigma+=0.1;
-    }
-
-    int best_nbr = overThresholdNbr(best_filter, thresh);
-    PRINTF_INFO("for dst kernel size %d, find best sigma %0.2f, valid nbr %d, filter res %0.6f, average res %0.6f\n", test_size, best_sigma, best_nbr, min_res, min_res/best_nbr);
-    saveDebugImage("best_filter.jpg", best_filter);
-
-    return best_sigma;
+    int best_nbr = overThresholdNbr(dst_filter, thresh);
+    PRINTF_INFO("for dst kernel size %d, test sigma %0.2f, valid nbr %d, filter res %0.6f, average res %0.6f\n", test_size, test_sigma, best_nbr, res, res/best_nbr);
+    saveDebugImage("check_filter.jpg", dst_filter);
 }
 
 
@@ -146,6 +110,7 @@ int main(int argc, char** argv)
     float src_sigma = 12.0f;
     float focal = 2.0f;
     int test_size = 5;
+    float test_sigma = 5.0f;
 
     PRINTF_INFO("input: src_filter_size, src_filter_sigma, resize_ratio, resize_filter_size\n");
     if(argc>1)
@@ -156,9 +121,11 @@ int main(int argc, char** argv)
         focal  = atof(argv[3]);
     if(argc>4)
         test_size = atoi(argv[4]);
+    if(argc>5)
+        test_sigma = atof(argv[5]);
     
     PRINTF_INFO("src_filter_size %d, src_filter_sigma %0.2f, resize_ratio %0.2f, resize_filter_size %d\n", src_size, src_sigma, focal, test_size);
-    findBestSigma(basic_image, src_size, src_sigma, focal, test_size, 0.1);
+    checkSigma(basic_image, src_size, src_sigma, focal, test_size, test_sigma, 0.1);
 
     return 0;
 }
